@@ -8,10 +8,10 @@ def footer() -> rx.Component:
             rx.el.div(
                 rx.el.div(
                     rx.el.h3(
-                        "Barnostri", class_name="text-2xl font-bold text-[#8B1E3F]"
+                        "Boteco.pt", class_name="text-2xl font-bold text-[#8B1E3F]"
                     ),
                     rx.el.p(
-                        "Modernizando o boteco brasileiro.",
+                        "Tecnologia inteligente para bares independentes.",
                         class_name="mt-2 text-sm text-[#4F3222] opacity-80",
                     ),
                 ),
@@ -52,20 +52,38 @@ def footer() -> rx.Component:
                     rx.el.div(
                         rx.el.h4("Contato", class_name="font-semibold text-[#4F3222]"),
                         rx.el.p(
-                            "contato@barnostri.com", class_name="mt-4 text-[#4F3222]"
+                            "contato@boteco.pt", class_name="mt-4 text-[#4F3222]"
                         ),
                         rx.el.div(
-                            rx.icon(
-                                tag="facebook",
-                                class_name="h-6 w-6 text-[#4F3222] hover:text-[#8B1E3F] transition-colors",
+                            rx.el.a(
+                                rx.icon(
+                                    tag="facebook",
+                                    class_name="h-6 w-6 text-[#4F3222] hover:text-[#8B1E3F] transition-colors",
+                                ),
+                                href="https://facebook.com/boteco.pt",
+                                target="_blank",
+                                rel="noreferrer",
+                                aria_label="Facebook Boteco.pt",
                             ),
-                            rx.icon(
-                                tag="instagram",
-                                class_name="h-6 w-6 text-[#4F3222] hover:text-[#8B1E3F] transition-colors",
+                            rx.el.a(
+                                rx.icon(
+                                    tag="instagram",
+                                    class_name="h-6 w-6 text-[#4F3222] hover:text-[#8B1E3F] transition-colors",
+                                ),
+                                href="https://instagram.com/boteco.pt",
+                                target="_blank",
+                                rel="noreferrer",
+                                aria_label="Instagram Boteco.pt",
                             ),
-                            rx.icon(
-                                tag="twitter",
-                                class_name="h-6 w-6 text-[#4F3222] hover:text-[#8B1E3F] transition-colors",
+                            rx.el.a(
+                                rx.icon(
+                                    tag="twitter",
+                                    class_name="h-6 w-6 text-[#4F3222] hover:text-[#8B1E3F] transition-colors",
+                                ),
+                                href="https://x.com/boteco_pt",
+                                target="_blank",
+                                rel="noreferrer",
+                                aria_label="Twitter Boteco.pt",
                             ),
                             class_name="flex mt-4 space-x-4",
                         ),
@@ -76,7 +94,7 @@ def footer() -> rx.Component:
             ),
             rx.el.div(
                 rx.el.p(
-                    f"© {2024} Barnostri. Todos os direitos reservados.",
+                    f"© {2024} Boteco.pt. Todos os direitos reservados.",
                     class_name="text-sm text-[#4F3222] opacity-70",
                 ),
                 class_name="mt-12 pt-8 border-t border-[#4F3222]/10 text-center",
