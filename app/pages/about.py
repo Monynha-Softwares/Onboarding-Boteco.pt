@@ -42,11 +42,11 @@ def about() -> rx.Component:
         rx.el.section(
             rx.el.div(
                 rx.el.h1(
-                    "Sobre a Barnostri",
+                    "Sobre a Boteco.pt",
                     class_name="text-4xl md:text-5xl font-extrabold text-[#8B1E3F] tracking-tight text-center",
                 ),
                 rx.el.p(
-                    "Nossa missão é fortalecer a cultura do boteco brasileiro através da tecnologia, oferecendo ferramentas que simplificam a gestão e impulsionam o crescimento de pequenos e médios estabelecimentos.",
+                    "Somos um estúdio de produto apaixonado por bares e botecos brasileiros. Combinamos design, dados e atendimento humano para que cada casa mantenha sua identidade e ganhe eficiência.",
                     class_name="mt-6 max-w-3xl mx-auto text-lg text-[#4F3222] text-center opacity-90",
                 ),
                 class_name="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8",
@@ -60,11 +60,11 @@ def about() -> rx.Component:
                         "Nossa História", class_name="text-3xl font-bold text-[#4F3222]"
                     ),
                     rx.el.p(
-                        "A Barnostri nasceu da paixão por botecos e da percepção de que muitos donos de bar, verdadeiros artesãos da hospitalidade, enfrentavam desafios diários com processos manuais e pouco eficientes. Decidimos criar uma plataforma que fosse a cara do Brasil: robusta, mas fácil de usar; completa, mas sem complicação. Queremos ser o parceiro que ajuda a transformar a paixão em um negócio ainda mais próspero.",
+                        "A Boteco.pt começou como uma consultoria que ajudava amigos donos de bar a organizar comandas e suprimentos. Evoluímos para uma plataforma completa após mapear mais de 200 operações em todo o país e entender que tecnologia precisava falar a mesma língua dos balcões.",
                         class_name="mt-4 text-lg text-[#4F3222] opacity-80",
                     ),
                     rx.el.p(
-                        "Desde o controle de uma simples comanda até a gestão completa de estoque e receitas, nosso sistema foi pensado para o dia a dia do boteco, permitindo que o dono foque no que faz de melhor: atender bem seus clientes.",
+                        "Hoje entregamos módulos de gestão, inteligência comercial e relacionamento com clientes, sem abrir mão da simplicidade que faz o boteco ser o que é. Nosso time acompanha a implementação do início ao fim.",
                         class_name="mt-4 text-lg text-[#4F3222] opacity-80",
                     ),
                 ),
@@ -81,17 +81,17 @@ def about() -> rx.Component:
                     info_card(
                         "zap",
                         "Simplicidade",
-                        "Criamos ferramentas intuitivas que qualquer pessoa pode usar, sem necessidade de treinamento extensivo. A tecnologia deve facilitar, não complicar.",
+                        "Interface clara, onboarding guiado e conteúdos de apoio em português. Tudo para que o time aprenda em minutos.",
                     ),
                     info_card(
                         "trending-up",
                         "Eficiência",
-                        "Nosso objetivo é otimizar operações, reduzir desperdícios e aumentar a lucratividade do seu negócio. Mais tempo para você, mais lucro no caixa.",
+                        "Indicadores diários, alertas inteligentes e automações que liberam energia para o atendimento.",
                     ),
                     info_card(
                         "heart-handshake",
                         "Suporte Local",
-                        "Entendemos a realidade brasileira. Oferecemos suporte próximo e em português, pronto para ajudar a resolver os desafios específicos do seu boteco.",
+                        "Somos brasileiros, atendemos em português e criamos materiais pensados para a cultura do boteco.",
                     ),
                     class_name="mt-12 grid gap-8 md:grid-cols-3",
                 ),
@@ -102,23 +102,21 @@ def about() -> rx.Component:
         rx.el.section(
             rx.el.div(
                 rx.el.h2(
-                    "Conheça o Time (Placeholder)",
+                    "Conheça o time",
                     class_name="text-3xl font-bold text-[#4F3222] text-center",
                 ),
                 rx.el.div(
                     team_member_card(
-                        "Ana Silva", "CEO & Co-fundadora", "/placeholder.svg"
+                        "Marcelo Santos", "Fundador", "/placeholder.svg"
                     ),
                     team_member_card(
-                        "Carlos Souza", "CTO & Co-fundador", "/placeholder.svg"
+                        "Tércio Barretoyan", "Diretor Estratégico", "/placeholder.svg"
                     ),
                     team_member_card(
-                        "Mariana Lima", "Chefe de Produto", "/placeholder.svg"
+                        "Sofia Reis", "Head de Design", "/placeholder.svg"
                     ),
                     team_member_card(
-                        "João Pereira",
-                        "Líder de Sucesso do Cliente",
-                        "/placeholder.svg",
+                        "Millena Martins", "Head de Relações Públicas", "/placeholder.svg"
                     ),
                     class_name="mt-12 grid gap-12 sm:grid-cols-2 lg:grid-cols-4",
                 ),

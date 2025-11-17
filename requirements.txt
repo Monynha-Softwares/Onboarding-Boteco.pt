@@ -6,3 +6,5 @@ supabase
 fastapi
 postgrest
 httpx
+pytest
+ruff

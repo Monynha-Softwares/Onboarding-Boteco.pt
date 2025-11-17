@@ -70,7 +70,7 @@ def plan_step() -> rx.Component:
         rx.el.div(
             rx.el.div(
                 rx.el.a(
-                    "Barnostri",
+                    "Boteco.pt",
                     href="/",
                     class_name="text-2xl font-bold text-[#8B1E3F] hover:opacity-90 transition-opacity",
                 ),

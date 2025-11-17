@@ -18,7 +18,7 @@ def header() -> rx.Component:
         rx.el.div(
             rx.el.div(
                 rx.el.a(
-                    "Barnostri",
+                    "Boteco.pt",
                     href="/",
                     class_name="text-2xl font-bold text-[#8B1E3F] hover:opacity-90 transition-opacity",
                 ),
@@ -26,6 +26,8 @@ def header() -> rx.Component:
                     nav_link("Início", "/"),
                     nav_link("Planos", "/pricing"),
                     nav_link("Sobre", "/about"),
+                    nav_link("Soluções", "/solutions"),
+                    nav_link("Contato", "/contact"),
                     class_name="hidden md:flex items-center space-x-8",
                 ),
                 class_name="flex items-center space-x-8",
@@ -76,6 +78,8 @@ def header() -> rx.Component:
                     nav_link("Início", "/"),
                     nav_link("Planos", "/pricing"),
                     nav_link("Sobre", "/about"),
+                    nav_link("Soluções", "/solutions"),
+                    nav_link("Contato", "/contact"),
                     class_name="px-2 pt-2 pb-3 space-y-1",
                 ),
                 rx.el.div(
