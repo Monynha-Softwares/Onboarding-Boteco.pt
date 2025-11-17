@@ -28,29 +28,16 @@ class OnboardingState(rx.State):
     selected_plan: str = ""
 
     @rx.event
-    async def load_clerk_data(self):
-        """Prefills form data from Clerk user info."""
-        self.personal_first_name = clerk.ClerkUser.first_name
-        self.personal_last_name = clerk.ClerkUser.last_name
-        self.personal_email = clerk.ClerkUser.email_address
-        self.current_step = 1
-        clerk_user_id = clerk.ClerkState.user_id
-        if clerk_user_id:
-            try:
-                response = (
-                    await supabase_client.client.table("users")
-                    .select("id")
-                    .eq("email", self.personal_email)
-                    .limit(1)
-                    .execute()
-                )
-                if response.data:
-                    self.user_id = response.data[0]["id"]
-            except Exception as e:
-                logging.exception(f"Could not pre-fetch user ID: {e}")
-
-    def _validate_personal_data(self) -> bool:
-        return all(
+    async def handle_personal_submit(self, form_data: dict):
+        self.personal_first_name = form_data.get("personal_first_name", "")
+        self.personal_last_name = form_data.get("personal_last_name", "")
+        self.personal_email = form_data.get("personal_email", "")
+        self.personal_tax_number = form_data.get("personal_tax_number", "")
+        self.personal_birth_date = form_data.get("personal_birth_date", "")
+        self.personal_country = form_data.get("personal_country", "")
+        self.personal_postal_code = form_data.get("personal_postal_code", "")
+        self.personal_house_number = form_data.get("personal_house_number", "")
+        if not all(
             [
                 self.personal_first_name,
                 self.personal_last_name,
@@ -61,11 +48,7 @@ class OnboardingState(rx.State):
                 self.personal_postal_code,
                 self.personal_house_number,
             ]
-        )
-
-    @rx.event
-    async def handle_personal_submit(self, form_data: dict):
-        if not self._validate_personal_data():
+        ):
             yield rx.toast.error("Por favor, preencha todos os campos.")
             return
         self.is_loading = True

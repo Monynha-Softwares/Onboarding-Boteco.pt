@@ -10,7 +10,9 @@ class SupabaseClient:
 
     def __init__(self):
         self.url: str | None = os.environ.get("SUPABASE_URL")
-        self.key: str | None = os.environ.get("SUPABASE_KEY")
+        self.key: str | None = os.environ.get(
+            "SUPABASE_SERVICE_ROLE_KEY"
+        ) or os.environ.get("SUPABASE_KEY")
         self.client: Client | None = self._initialize_client()
 
     def _initialize_client(self) -> Client | None:
