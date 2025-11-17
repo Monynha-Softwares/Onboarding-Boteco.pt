@@ -12,7 +12,7 @@ from app.pages.onboarding.success import success_page
 from app.pages.dashboard import dashboard
 from app.api.provision import api_app
 
-app = rx.App(
+base_app = rx.App(
     theme=rx.theme(appearance="light"),
     head_components=[
         rx.el.link(rel="preconnect", href="https://fonts.googleapis.com"),
@@ -22,15 +22,15 @@ app = rx.App(
             rel="stylesheet",
         ),
     ],
-    api_transformer=api_app,
 )
 app = clerk.wrap_app(
-    app,
+    base_app,
     publishable_key=os.getenv("CLERK_PUBLISHABLE_KEY"),
     secret_key=os.getenv("CLERK_SECRET_KEY"),
+    register_user_state=True,
+    add_clerk_pages=True,
 )
-clerk.add_sign_in_page(app)
-clerk.add_sign_up_page(app)
+app.api = api_app
 app.add_page(index, route="/")
 app.add_page(pricing, route="/pricing")
 app.add_page(about, route="/about")
