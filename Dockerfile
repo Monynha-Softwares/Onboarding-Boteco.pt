@@ -47,12 +47,6 @@ RUN $uv pip install -r requirements.txt
 # Deploy templates and prepare app
 RUN reflex init
 
-# Install Bun (used to serve exported frontend) into the app folder so it is copied
-# into the final image. Install minimal deps first.
-RUN apt-get update -y && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/* \
-    && BUN_INSTALL=/app/.bun bash -c "curl -fsSL https://bun.sh/install | bash" \
-    && rm -rf /var/lib/apt/lists/*
-
 # Stage 2: copy artifacts into slim image 
 FROM python:3.13-slim
 WORKDIR /app
@@ -61,22 +55,11 @@ COPY --chown=reflex --from=init /app /app
 # Install libpq-dev for psycopg (skip if not using postgres).
 RUN apt-get update -y && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
 USER reflex
-ENV PATH="/app/.venv/bin:/app/.bun/bin:$PATH" PYTHONUNBUFFERED=1
-
-# Expose frontend port for candy proxy (static assets / frontend hosting)
-EXPOSE 8080
+ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 
 # Needed until Reflex properly passes SIGTERM on backend.
 STOPSIGNAL SIGKILL
 
-# Always apply migrations before starting the backend and serve frontend (if exported)
-# Start the backend in the background and run Bun static server in foreground so
-# the container process stays alive. If the frontend export doesn't exist, only
-# the backend will run.
-CMD ["/bin/sh","-c","[ -d alembic ] && reflex db migrate; \
-        reflex run --env prod --backend-only --backend-port ${PORT:-8000} & \
-        if [ -d .web/build/client ]; then \
-            bunx serve -s .web/build/client -l 8080; \
-        else \
-            wait -n; \
-        fi"]
+# Always apply migrations before starting the backend.
+CMD [ -d alembic ] && reflex db migrate; \
+    exec reflex run --env prod --backend-only --backend-port ${PORT:-8000}
