@@ -1,7 +1,7 @@
 import os
 
 import reflex as rx
-import reflex_clerk_api as clerk
+import reflex_clerk_api as reclerk
 
 from app import styles
 from app.pages.index import index
@@ -30,7 +30,7 @@ base_app = rx.App(
     theme=tokens,
     head_components=styles.globals(),
 )
-app = clerk.wrap_app(
+app = reclerk.wrap_app(
     base_app,
     publishable_key=os.getenv("CLERK_PUBLISHABLE_KEY"),
     secret_key=os.getenv("CLERK_SECRET_KEY"),
@@ -51,9 +51,9 @@ app.add_page(contact, route="/contact")
 app.add_page(privacy, route="/legal/privacy")
 app.add_page(terms, route="/legal/terms")
 app.add_page(not_found_page, route="/404")
-app.add_page(personal_step, route="/onboarding/step-1-personal", on_load=clerk.protect)
-app.add_page(business_step, route="/onboarding/step-2-business", on_load=clerk.protect)
-app.add_page(plan_step, route="/onboarding/step-3-plan", on_load=clerk.protect)
-app.add_page(payment_step, route="/onboarding/step-4-payment", on_load=clerk.protect)
-app.add_page(success_page, route="/onboarding/success", on_load=clerk.protect)
-app.add_page(dashboard, route="/app", on_load=clerk.protect)
+app.add_page(personal_step, route="/onboarding/step-1-personal", on_load=reclerk.protect)
+app.add_page(business_step, route="/onboarding/step-2-business", on_load=reclerk.protect)
+app.add_page(plan_step, route="/onboarding/step-3-plan", on_load=reclerk.protect)
+app.add_page(payment_step, route="/onboarding/step-4-payment", on_load=reclerk.protect)
+app.add_page(success_page, route="/onboarding/success", on_load=reclerk.protect)
+app.add_page(dashboard, route="/app", on_load=reclerk.protect)
