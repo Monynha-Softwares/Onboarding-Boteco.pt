@@ -29,10 +29,10 @@ def setup_schema():
         return
     try:
         sql_command = sql_path.read_text(encoding="utf-8")
-        logger.info("Connecting to database...")
+        logger.info("Connecting to database")
         with psycopg.connect(db_url) as conn:
             with conn.cursor() as cur:
-                logger.info("Executing schema setup SQL...")
+                logger.info("Executing schema setup SQL")
                 cur.execute(sql_command)
             conn.commit()
         logger.info("✅ Schema setup completed successfully!")

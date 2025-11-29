@@ -76,7 +76,7 @@ def index() -> rx.Component:
                     rx.el.div(
                         rx.el.a(
                             "Comece Agora",
-                            href="/sign-up",
+                            href="/signup",
                             class_name="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-[#8B1E3F] to-[#a13b5a] hover:from-[#7a1a37] hover:to-[#8B1E3F] shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300",
                         ),
                         rx.el.a(

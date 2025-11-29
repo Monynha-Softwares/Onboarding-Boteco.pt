@@ -92,15 +92,15 @@ def payment_step() -> rx.Component:
                             class_name="inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50",
                         ),
                         rx.el.button(
-                            rx.cond(
-                                OnboardingState.is_loading,
-                                rx.el.div(
-                                    rx.spinner(class_name="h-4 w-4"),
-                                    "Processando...",
-                                    class_name="flex items-center gap-2",
-                                ),
-                                "Finalizar e Pagar",
-                            ),
+                              rx.cond(
+                                  OnboardingState.is_loading,
+                                  rx.el.div(
+                                      rx.spinner(class_name="h-4 w-4"),
+                                      "Processando pagamento",
+                                      class_name="flex items-center gap-2",
+                                  ),
+                                  "Finalizar e Pagar",
+                              ),
                             type="submit",
                             is_disabled=OnboardingState.is_loading,
                             class_name="ml-4 inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#8B1E3F] hover:bg-[#7a1a37] disabled:bg-gray-400",

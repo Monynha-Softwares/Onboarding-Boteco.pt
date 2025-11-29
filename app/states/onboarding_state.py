@@ -1,10 +1,12 @@
-import reflex as rx
-from app.services.supabase_client import supabase_client
 import logging
+
+import reflex as rx
+
+from app.services.supabase_client import supabase_client
 from app.utils.validators import (
-    validate_username,
     validate_cpf_cnpj,
     validate_postal_code,
+    validate_username,
 )
 
 
@@ -77,18 +79,13 @@ class OnboardingState(rx.State):
                 "is_owner": True,
             }
             response = await supabase_client.upsert_user(user_data)
-            if response.data:
-                self.user_id = response.data[0]["id"]
+            if response:
+                self.user_id = response[0]["id"]
                 self.current_step = 2
                 self.is_loading = False
                 yield rx.redirect("/onboarding/step-2-business")
                 return
-            else:
-                raise Exception(
-                    response.error.message
-                    if response.error
-                    else "No data returned from upsert"
-                )
+            raise ValueError("Nenhum dado retornado ao salvar o usuário.")
         except Exception as e:
             logging.exception(f"Error during personal data submission: {e}")
             self.is_loading = False
