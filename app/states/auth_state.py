@@ -80,7 +80,8 @@ class AuthState(rx.State):
         """
         email = form_data.get("email", "")
         if not email:
-            return rx.toast.error("Forneça um email para entrar.")
+            yield rx.toast.error("Forneça um email para entrar.")
+            return
         try:
             user = await supabase_client.get_user_by_email(email)
             if user and len(user) > 0:
@@ -92,7 +93,9 @@ class AuthState(rx.State):
                 yield rx.redirect("/onboarding/step-1-personal")
                 return
             else:
-                return rx.toast.error("Usuário não encontrado. Por favor registre-se.")
+                yield rx.toast.error("Usuário não encontrado. Por favor registre-se.")
+                return
         except Exception as e:
             logging.exception(f"Sign-in failed: {e}")
-            return rx.toast.error("Erro no login. Tente novamente.")
+            yield rx.toast.error("Erro no login. Tente novamente.")
+            return
