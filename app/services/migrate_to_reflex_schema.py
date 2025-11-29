@@ -22,9 +22,9 @@ def migrate():
             logger.error(f"SQL file not found at {sql_path}")
             return
         sql_command = sql_path.read_text(encoding="utf-8")
-        logger.info("Executing schema setup SQL...")
+        logger.info("Executing schema setup SQL")
         response = client.rpc("execute_sql", {"sql_command": sql_command}).execute()
-        logger.info("Migration SQL executed. Checking schema status...")
+        logger.info("Migration SQL executed. Checking schema status")
         logger.info("Migration script completed successfully.")
     except Exception as e:
         logger.exception(f"An error occurred during migration: {e}")

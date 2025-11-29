@@ -146,15 +146,15 @@ def personal_step() -> rx.Component:
                     ),
                     rx.el.div(
                         rx.el.button(
-                            rx.cond(
-                                OnboardingState.is_loading,
-                                rx.el.div(
-                                    rx.spinner(class_name="h-4 w-4"),
-                                    "Salvando...",
-                                    class_name="flex items-center gap-2",
-                                ),
-                                "Continuar",
-                            ),
+                              rx.cond(
+                                  OnboardingState.is_loading,
+                                  rx.el.div(
+                                      rx.spinner(class_name="h-4 w-4"),
+                                      "Salvando",
+                                      class_name="flex items-center gap-2",
+                                  ),
+                                  "Continuar",
+                              ),
                             type="submit",
                             is_disabled=OnboardingState.is_loading,
                             class_name="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#8B1E3F] hover:bg-[#7a1a37] disabled:bg-gray-400",

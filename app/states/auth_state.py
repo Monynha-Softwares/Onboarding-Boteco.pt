@@ -1,101 +1,123 @@
-import reflex as rx
+"""Authentication helpers for the Boteco onboarding flow."""
+
+from __future__ import annotations
+
 import logging
+from typing import Any, Dict, Tuple
+
+import reflex as rx
+
 from app.services.supabase_client import supabase_client
 from app.states.onboarding_state import OnboardingState
 
 
 class AuthState(rx.State):
-    """Custom auth state to register/sign-in users into onboarding flow.
+    """Custom auth state to register/sign-in users into the onboarding flow."""
 
-    Note: this project previously relied on Clerk for auth. The original Clerk
-    integration is left in the repo (commented in `app/app.py`) but this
-    state provides a minimal custom flow that persists the user's personal
-    details into Supabase and redirects them into onboarding.
-    """
+    @staticmethod
+    def _prefill_onboarding(user: Dict[str, Any]) -> None:
+        """Populate onboarding fields from a user payload."""
 
-    @rx.event
-    async def register(self, form_data: dict):
-        """Register a new personal account and start onboarding.
+        OnboardingState.user_id = user.get("id")
+        OnboardingState.personal_first_name = user.get("first_name", "")
+        OnboardingState.personal_last_name = user.get("last_name", "")
+        OnboardingState.personal_email = user.get("email", "")
+        OnboardingState.personal_tax_number = user.get("tax_number", "")
+        OnboardingState.personal_birth_date = user.get("birth_date", "")
+        OnboardingState.personal_country = user.get("country", "Brasil")
+        OnboardingState.personal_postal_code = user.get("postal_code", "")
+        OnboardingState.personal_house_number = user.get("house_number", "")
+        OnboardingState.current_step = 1
 
-        Expects same fields as the personal onboarding form. Persists a user
-        record in Supabase via `supabase_client.upsert_user` and then
-        redirects to the onboarding flow. Also attempts to populate
-        `OnboardingState` fields so the onboarding form is prefilled.
-        """
-        first_name = form_data.get("personal_first_name", "")
-        last_name = form_data.get("personal_last_name", "")
-        email = form_data.get("personal_email", "")
-        tax_number = form_data.get("personal_tax_number", "")
-        birth_date = form_data.get("personal_birth_date", "")
-        country = form_data.get("personal_country", "Brasil")
-        postal_code = form_data.get("personal_postal_code", "")
-        house_number = form_data.get("personal_house_number", "")
+    @staticmethod
+    def _build_user_payload(form_data: Dict[str, Any]) -> Tuple[Dict[str, Any], str | None]:
+        """Extract and validate registration fields from the form."""
 
-        if not all([first_name, last_name, email]):
-            yield rx.toast.error("Por favor, preencha nome e email.")
-            return
+        first_name = form_data.get("personal_first_name", "").strip()
+        last_name = form_data.get("personal_last_name", "").strip()
+        email = form_data.get("personal_email", "").strip()
+        password = form_data.get("password", "").strip()
+        tax_number = form_data.get("personal_tax_number", "").strip()
+        birth_date = form_data.get("personal_birth_date", "").strip()
+        country = form_data.get("personal_country", "Brasil").strip() or "Brasil"
+        postal_code = form_data.get("personal_postal_code", "").strip()
+        house_number = form_data.get("personal_house_number", "").strip()
+
+        if not all([first_name, last_name, email, password]):
+            return {}, "Preencha nome, sobrenome, email e senha para continuar."
+        if len(password) < 6:
+            return {}, "A senha deve ter pelo menos 6 caracteres."
+
+        username_hint = (
+            f"{first_name.lower()}.{last_name.lower()}{tax_number[:4]}"
+            if tax_number
+            else f"{first_name.lower()}.{last_name.lower()}"
+        )
 
         user_data = {
             "email": email,
-            "username": f"{first_name.lower()}.{last_name.lower()}{tax_number[:4]}",
-            "tax_number": tax_number,
+            "username": username_hint,
+            "tax_number": tax_number or "N/A",
             "first_name": first_name,
             "last_name": last_name,
-            "birth_date": birth_date,
-            "country": country,
+            "birth_date": birth_date or "1900-01-01",
+            "country": country or "Brasil",
             "postal_code": postal_code,
             "house_number": house_number,
             "is_owner": True,
         }
+        return user_data, None
 
+    @classmethod
+    async def _perform_register(
+        cls, form_data: Dict[str, Any], client=supabase_client
+    ) -> Tuple[str | None, str | None]:
+        """Shared registration logic to ease testing."""
+
+        user_data, error = cls._build_user_payload(form_data)
+        if error:
+            return None, error
         try:
-            response = await supabase_client.upsert_user(user_data)
-            if response.data:
-                created_user = response.data[0]
-                # Try to populate onboarding state defaults so the form is prefilled
-                OnboardingState.personal_first_name = created_user.get("first_name", "")
-                OnboardingState.personal_last_name = created_user.get("last_name", "")
-                OnboardingState.personal_email = created_user.get("email", "")
-                OnboardingState.personal_tax_number = created_user.get("tax_number", "")
-                OnboardingState.personal_birth_date = created_user.get("birth_date", "")
-                OnboardingState.personal_country = created_user.get("country", "Brasil")
-                OnboardingState.personal_postal_code = created_user.get("postal_code", "")
-                OnboardingState.personal_house_number = created_user.get("house_number", "")
-                OnboardingState.user_id = created_user.get("id")
-                # Start onboarding at step 1 (personal) so user can continue the flow
-                yield rx.redirect("/onboarding/step-1-personal")
-                return
-            else:
-                raise Exception(response.error.message if response.error else "No data returned")
-        except Exception as e:
-            logging.exception(f"Failed to register user: {e}")
-            yield rx.toast.error(f"Falha ao criar conta: {e}")
+            created = await client.create_user(user_data)
+            if not created:
+                return None, "Não foi possível criar a conta. Tente novamente."
+            cls._prefill_onboarding(created[0])
+            return "/onboarding/step-1-personal", None
+        except Exception as exc:  # pragma: no cover - guarded by tests on helpers
+            logging.exception("Failed to register user: %s", exc)
+            return None, f"Falha ao criar conta: {exc}"
+
+    @rx.event
+    async def register(self, form_data: dict):
+        redirect_to, error = await self._perform_register(form_data)
+        if error:
+            yield rx.toast.error(error)
+            return
+        yield rx.redirect(redirect_to)
+
+    @classmethod
+    async def _perform_signin(
+        cls, form_data: Dict[str, Any], client=supabase_client
+    ) -> Tuple[str | None, str | None]:
+        """Shared sign-in logic used by the event handler and tests."""
+
+        email = form_data.get("email", "").strip()
+        if not email:
+            return None, "Forneça um email para entrar."
+        try:
+            users = await client.get_user_by_email(email)
+            if not users:
+                return None, "Usuário não encontrado. Por favor registre-se."
+            cls._prefill_onboarding(users[0])
+            return "/onboarding/step-1-personal", None
+        except Exception as exc:  # pragma: no cover - guarded by tests on helpers
+            logging.exception("Sign-in failed: %s", exc)
+            return None, "Erro no login. Tente novamente."
 
     @rx.event
     async def signin(self, form_data: dict):
-        """Sign-in by email: if a user exists, set onboarding `user_id` and redirect.
-
-        This is intentionally minimal: it does not implement passwords. It's
-        useful for dev/demo workflows where Supabase is the canonical user store.
-        """
-        email = form_data.get("email", "")
-        if not email:
-            yield rx.toast.error("Forneça um email para entrar.")
+        redirect_to, error = await self._perform_signin(form_data)
+        if error:
+            yield rx.toast.error(error)
             return
-        try:
-            user = await supabase_client.get_user_by_email(email)
-            if user and len(user) > 0:
-                u = user[0]
-                OnboardingState.user_id = u.get("id")
-                OnboardingState.personal_first_name = u.get("first_name", "")
-                OnboardingState.personal_last_name = u.get("last_name", "")
-                OnboardingState.personal_email = u.get("email", "")
-                yield rx.redirect("/onboarding/step-1-personal")
-                return
-            else:
-                yield rx.toast.error("Usuário não encontrado. Por favor registre-se.")
-                return
-        except Exception as e:
-            logging.exception(f"Sign-in failed: {e}")
-            yield rx.toast.error("Erro no login. Tente novamente.")
-            return
+        yield rx.redirect(redirect_to)

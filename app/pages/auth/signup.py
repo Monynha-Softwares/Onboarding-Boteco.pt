@@ -4,7 +4,14 @@ from app.states.onboarding_state import OnboardingState
 from app.components.onboarding_stepper import onboarding_stepper
 
 
-def form_field(label: str, placeholder: str, value: rx.Var, on_change: rx.event.EventHandler, name: str, field_type: str = "text") -> rx.Component:
+def form_field(
+    label: str,
+    placeholder: str,
+    value: rx.Var,
+    on_change: rx.event.EventHandler,
+    name: str,
+    field_type: str = "text",
+) -> rx.Component:
     return rx.el.div(
         rx.el.label(label, class_name="block text-sm font-medium text-[#4F3222]"),
         rx.el.input(
@@ -62,6 +69,19 @@ def signup_page() -> rx.Component:
                             OnboardingState.set_personal_email,
                             name="personal_email",
                             field_type="email",
+                        ),
+                        rx.el.div(
+                            rx.el.label(
+                                "Senha",
+                                class_name="block text-sm font-medium text-[#4F3222]",
+                            ),
+                            rx.el.input(
+                                placeholder="Crie uma senha segura",
+                                name="password",
+                                type="password",
+                                class_name="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#B3701A] focus:border-[#B3701A] sm:text-sm",
+                            ),
+                            class_name="col-span-6 sm:col-span-3",
                         ),
                         form_field(
                             "CPF",

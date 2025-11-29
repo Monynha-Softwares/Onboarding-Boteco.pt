@@ -99,7 +99,7 @@ def contact() -> rx.Component:
                                 class_name="block text-sm font-medium text-[#4F3222]",
                             ),
                             rx.el.textarea(
-                                placeholder="Conte o que está buscando...",
+                                placeholder="Conte o que está buscando em detalhes",
                                 rows=4,
                                 class_name="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm",
                             ),
