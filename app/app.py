@@ -13,6 +13,8 @@ from app.pages.onboarding.payment import payment_step
 from app.pages.onboarding.success import success_page
 from app.pages.dashboard import dashboard
 from app.api.provision import api_app
+from app.pages.auth.signup import signup_page
+from app.pages.auth.signin import signin_page
 
 base_app = rx.App(
     theme=rx.theme(appearance="light"),
@@ -41,7 +43,9 @@ app = clerk.wrap_app(
     publishable_key=os.getenv("CLERK_PUBLISHABLE_KEY"),
     secret_key=os.getenv("CLERK_SECRET_KEY"),
     register_user_state=True,
-    add_clerk_pages=True,
+    # The project originally enabled Clerk-hosted sign-in/sign-up pages here.
+    # We are moving to a custom sign-up/sign-in flow for onboarding.
+    # add_clerk_pages=True,
 )
 app.api = api_app
 app.add_page(index, route="/")
@@ -49,9 +53,16 @@ app.add_page(pricing, route="/pricing")
 app.add_page(about, route="/about")
 app.add_page(solutions, route="/solutions")
 app.add_page(contact, route="/contact")
-app.add_page(personal_step, route="/onboarding/step-1-personal", on_load=clerk.protect)
-app.add_page(business_step, route="/onboarding/step-2-business", on_load=clerk.protect)
-app.add_page(plan_step, route="/onboarding/step-3-plan", on_load=clerk.protect)
-app.add_page(payment_step, route="/onboarding/step-4-payment", on_load=clerk.protect)
-app.add_page(success_page, route="/onboarding/success", on_load=clerk.protect)
+app.add_page(personal_step, route="/onboarding/step-1-personal")
+# app.add_page(personal_step, route="/onboarding/step-1-personal", on_load=clerk.protect)
+app.add_page(business_step, route="/onboarding/step-2-business")
+# app.add_page(business_step, route="/onboarding/step-2-business", on_load=clerk.protect)
+app.add_page(plan_step, route="/onboarding/step-3-plan")
+# app.add_page(plan_step, route="/onboarding/step-3-plan", on_load=clerk.protect)
+app.add_page(payment_step, route="/onboarding/step-4-payment")
+# app.add_page(payment_step, route="/onboarding/step-4-payment", on_load=clerk.protect)
+app.add_page(success_page, route="/onboarding/success")
+# app.add_page(success_page, route="/onboarding/success", on_load=clerk.protect)
 app.add_page(dashboard, route="/app", on_load=clerk.protect)
+app.add_page(signup_page, route="/signup")
+app.add_page(signin_page, route="/signin")

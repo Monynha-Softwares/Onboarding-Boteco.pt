@@ -99,5 +99,14 @@ class SupabaseClient:
         )
         return response.count > 0
 
+    async def get_user_by_email(self, email: str):
+        """Return user records that match the given email (list)."""
+        if not self.client:
+            raise ConnectionError("Supabase client not initialized.")
+        resp = (
+            await self.client.table("users").select("*").eq("email", email).limit(1).execute()
+        )
+        return resp.data
+
 
 supabase_client = SupabaseClient()

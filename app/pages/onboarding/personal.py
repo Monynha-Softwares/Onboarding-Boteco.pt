@@ -51,30 +51,60 @@ def personal_step() -> rx.Component:
                 ),
                 rx.el.form(
                     rx.el.div(
+                        # Previously the app used Clerk-provided user info to prefill
+                        # and disable personal fields. That implementation is kept
+                        # here (commented) for reference, but we now allow a
+                        # custom auth/onboarding flow that uses OnboardingState
+                        # values and a custom sign-up page.
+                        # form_field(
+                        #     "Nome",
+                        #     "",
+                        #     clerk.ClerkUser.first_name,
+                        #     OnboardingState.set_personal_first_name,
+                        #     name="personal_first_name",
+                        #     disabled=True,
+                        # ),
+                        # form_field(
+                        #     "Sobrenome",
+                        #     "",
+                        #     clerk.ClerkUser.last_name,
+                        #     OnboardingState.set_personal_last_name,
+                        #     name="personal_last_name",
+                        #     disabled=True,
+                        # ),
+                        # form_field(
+                        #     "Email",
+                        #     "",
+                        #     clerk.ClerkUser.email_address,
+                        #     OnboardingState.set_personal_email,
+                        #     name="personal_email",
+                        #     field_type="email",
+                        #     disabled=True,
+                        # ),
+
+                        # New/custom flow: prefer OnboardingState values so the
+                        # signup page can populate them and the user can edit.
                         form_field(
                             "Nome",
                             "",
-                            clerk.ClerkUser.first_name,
+                            OnboardingState.personal_first_name,
                             OnboardingState.set_personal_first_name,
                             name="personal_first_name",
-                            disabled=True,
                         ),
                         form_field(
                             "Sobrenome",
                             "",
-                            clerk.ClerkUser.last_name,
+                            OnboardingState.personal_last_name,
                             OnboardingState.set_personal_last_name,
                             name="personal_last_name",
-                            disabled=True,
                         ),
                         form_field(
                             "Email",
                             "",
-                            clerk.ClerkUser.email_address,
+                            OnboardingState.personal_email,
                             OnboardingState.set_personal_email,
                             name="personal_email",
                             field_type="email",
-                            disabled=True,
                         ),
                         form_field(
                             "CPF",
