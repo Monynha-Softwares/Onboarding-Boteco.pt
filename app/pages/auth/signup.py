@@ -1,5 +1,6 @@
 import reflex as rx
 from app.states.auth_state import AuthState
+from app.states.onboarding_state import OnboardingState
 from app.components.onboarding_stepper import onboarding_stepper
 
 
@@ -29,7 +30,9 @@ def signup_page() -> rx.Component:
                 ),
                 class_name="py-8 px-4 sm:px-6 lg:px-8 bg-[#F1DDAD]/50 border-b border-gray-200",
             ),
-            onboarding_stepper(rx.var(0)),
+            # Use the global onboarding state so the stepper renders correctly
+            # (rx.var(0) caused a runtime compile error in the Reflex compiler).
+            onboarding_stepper(OnboardingState.current_step),
             rx.el.div(
                 rx.el.h2("Criar Conta", class_name="text-2xl font-bold text-[#4F3222]"),
                 rx.el.p(
