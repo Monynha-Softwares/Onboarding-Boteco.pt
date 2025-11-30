@@ -1,5 +1,4 @@
 import reflex as rx
-import reflex as rx
 
 from app.states.onboarding_state import OnboardingState
 from app.components.onboarding_stepper import onboarding_stepper
@@ -12,6 +11,8 @@ def plan_onboarding_card(
     plan_id: str,
     recommended: bool = False,
 ) -> rx.Component:
+    """Selectable pricing card for the onboarding flow."""
+
     is_selected = OnboardingState.selected_plan == plan_id
     return rx.el.div(
         rx.el.div(
@@ -26,24 +27,16 @@ def plan_onboarding_card(
             class_name="flex items-center",
         ),
         rx.el.p(
-            rx.el.span(
-                f"R$ {price}", class_name="text-3xl font-extrabold text-[#8C1D2C]"
-            ),
-            rx.el.span(
-                "/mês", class_name="text-sm font-medium text-[#8C1D2C] opacity-70"
-            ),
+            rx.el.span(f"R$ {price}", class_name="text-3xl font-extrabold text-[#8C1D2C]"),
+            rx.el.span("/mês", class_name="text-sm font-medium text-[#8C1D2C] opacity-70"),
             class_name="mt-2 flex items-baseline",
         ),
         rx.el.ul(
             rx.foreach(
                 features,
                 lambda feature: rx.el.li(
-                    rx.icon(
-                        tag="check", class_name="flex-shrink-0 h-5 w-5 text-[#4CAF50]"
-                    ),
-                    rx.el.span(
-                        feature, class_name="ml-2 text-sm text-[#8C1D2C] opacity-90"
-                    ),
+                    rx.icon(tag="check", class_name="flex-shrink-0 h-5 w-5 text-[#4CAF50]"),
+                    rx.el.span(feature, class_name="ml-2 text-sm text-[#8C1D2C] opacity-90"),
                     class_name="flex items-center",
                 ),
             ),
@@ -68,6 +61,8 @@ def plan_onboarding_card(
 
 
 def plan_step() -> rx.Component:
+    """Step 3: plan selection before payment."""
+
     return rx.el.main(
         rx.el.div(
             rx.el.div(

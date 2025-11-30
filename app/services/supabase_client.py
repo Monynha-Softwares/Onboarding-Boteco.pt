@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 import os
 from typing import Any, Awaitable, Callable, List, Optional
@@ -35,16 +36,22 @@ class SupabaseClient:
 
     def _require_client(self) -> Client:
         if not self.client:
-            raise ConnectionError("Supabase client not initialized. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.")
+            raise ConnectionError(
+                "Supabase client not initialized. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
+            )
         return self.client
 
-    async def _execute(self, action: Callable[[Client], Awaitable[APIResponse]]) -> APIResponse:
+    async def _execute(self, action: Callable[[Client], Awaitable[APIResponse] | APIResponse]) -> APIResponse:
+        """Execute an action against Supabase, supporting sync or async clients."""
+
         client = self._require_client()
         try:
-            response = await action(client)
+            result = action(client)
+            response = await result if inspect.isawaitable(result) else result
         except Exception as exc:
             logging.exception("Supabase request failed: %s", exc)
             raise
+
         error = getattr(response, "error", None)
         if error:
             message = getattr(error, "message", str(error))
@@ -117,7 +124,11 @@ class SupabaseClient:
         """Check if a user is associated with any boteco."""
 
         response = await self._execute(
-            lambda client: client.table("user_boteco").select("id", count="exact").eq("user_id", user_id).limit(1).execute()
+            lambda client: client.table("user_boteco")
+            .select("id", count="exact")
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
         )
         return bool(getattr(response, "count", 0) > 0)
 

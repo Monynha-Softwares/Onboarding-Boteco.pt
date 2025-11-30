@@ -1,6 +1,4 @@
 import reflex as rx
-import reflex as rx
-import reflex_clerk_api as clerk
 from app.states.onboarding_state import OnboardingState
 from app.components.onboarding_stepper import onboarding_stepper
 
@@ -14,6 +12,8 @@ def form_field(
     field_type: str = "text",
     disabled: bool = False,
 ) -> rx.Component:
+    """Generic text field for the personal step."""
+
     return rx.el.div(
         rx.el.label(label, class_name="block text-sm font-medium text-[#8C1D2C]"),
         rx.el.input(
@@ -30,6 +30,8 @@ def form_field(
 
 
 def personal_step() -> rx.Component:
+    """Step 1: capture the user's personal data."""
+
     return rx.el.main(
         rx.el.div(
             rx.el.div(
@@ -52,39 +54,6 @@ def personal_step() -> rx.Component:
                 ),
                 rx.el.form(
                     rx.el.div(
-                        # Previously the app used Clerk-provided user info to prefill
-                        # and disable personal fields. That implementation is kept
-                        # here (commented) for reference, but we now allow a
-                        # custom auth/onboarding flow that uses OnboardingState
-                        # values and a custom sign-up page.
-                        # form_field(
-                        #     "Nome",
-                        #     "",
-                        #     clerk.ClerkUser.first_name,
-                        #     OnboardingState.set_personal_first_name,
-                        #     name="personal_first_name",
-                        #     disabled=True,
-                        # ),
-                        # form_field(
-                        #     "Sobrenome",
-                        #     "",
-                        #     clerk.ClerkUser.last_name,
-                        #     OnboardingState.set_personal_last_name,
-                        #     name="personal_last_name",
-                        #     disabled=True,
-                        # ),
-                        # form_field(
-                        #     "Email",
-                        #     "",
-                        #     clerk.ClerkUser.email_address,
-                        #     OnboardingState.set_personal_email,
-                        #     name="personal_email",
-                        #     field_type="email",
-                        #     disabled=True,
-                        # ),
-
-                        # New/custom flow: prefer OnboardingState values so the
-                        # signup page can populate them and the user can edit.
                         form_field(
                             "Nome",
                             "",
@@ -147,15 +116,15 @@ def personal_step() -> rx.Component:
                     ),
                     rx.el.div(
                         rx.el.button(
-                              rx.cond(
-                                  OnboardingState.is_loading,
-                                  rx.el.div(
-                                      rx.spinner(class_name="h-4 w-4"),
-                                      "Salvando",
-                                      class_name="flex items-center gap-2",
-                                  ),
-                                  "Continuar",
-                              ),
+                            rx.cond(
+                                OnboardingState.is_loading,
+                                rx.el.div(
+                                    rx.spinner(class_name="h-4 w-4"),
+                                    "Salvando",
+                                    class_name="flex items-center gap-2",
+                                ),
+                                "Continuar",
+                            ),
                             type="submit",
                             is_disabled=OnboardingState.is_loading,
                             class_name="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#8C1D2C] hover:bg-[#AA3140] disabled:bg-gray-400",

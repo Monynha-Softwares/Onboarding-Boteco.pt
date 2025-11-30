@@ -15,6 +15,7 @@ class OnboardingState(rx.State):
 
     current_step: int = 1
     is_loading: bool = False
+
     personal_first_name: str = ""
     personal_last_name: str = ""
     personal_email: str = ""
@@ -24,6 +25,7 @@ class OnboardingState(rx.State):
     personal_postal_code: str = ""
     personal_house_number: str = ""
     user_id: str | None = None
+
     business_public_name: str = ""
     business_username: str = ""
     business_tax_number: str = ""
@@ -31,18 +33,22 @@ class OnboardingState(rx.State):
     business_country: str = "Brasil"
     business_postal_code: str = ""
     business_vibe_tags: str = ""
+
     selected_plan: str = ""
 
     @rx.event
     async def handle_personal_submit(self, form_data: dict):
-        self.personal_first_name = form_data.get("personal_first_name", "")
-        self.personal_last_name = form_data.get("personal_last_name", "")
-        self.personal_email = form_data.get("personal_email", "")
-        self.personal_tax_number = form_data.get("personal_tax_number", "")
-        self.personal_birth_date = form_data.get("personal_birth_date", "")
-        self.personal_country = form_data.get("personal_country", "")
-        self.personal_postal_code = form_data.get("personal_postal_code", "")
-        self.personal_house_number = form_data.get("personal_house_number", "")
+        """Persist the personal details and advance the onboarding."""
+
+        self.personal_first_name = form_data.get("personal_first_name", "").strip()
+        self.personal_last_name = form_data.get("personal_last_name", "").strip()
+        self.personal_email = form_data.get("personal_email", "").strip()
+        self.personal_tax_number = form_data.get("personal_tax_number", "").strip()
+        self.personal_birth_date = form_data.get("personal_birth_date", "").strip()
+        self.personal_country = form_data.get("personal_country", "").strip() or "Brasil"
+        self.personal_postal_code = form_data.get("personal_postal_code", "").strip()
+        self.personal_house_number = form_data.get("personal_house_number", "").strip()
+
         if not all(
             [
                 self.personal_first_name,
@@ -57,18 +63,23 @@ class OnboardingState(rx.State):
         ):
             yield rx.toast.error("Por favor, preencha todos os campos.")
             return
+
         if not validate_cpf_cnpj(self.personal_tax_number):
             yield rx.toast.error("CPF ou CNPJ inválido. Verifique os números.")
             return
+
         if not validate_postal_code(self.personal_postal_code):
             yield rx.toast.error("CEP inválido. Use o formato com 8 dígitos.")
             return
+
         self.is_loading = True
         yield
+
         try:
+            username_hint = f"{self.personal_first_name.lower()}.{self.personal_last_name.lower()}{self.personal_tax_number[:4]}"
             user_data = {
                 "email": self.personal_email,
-                "username": f"{self.personal_first_name.lower()}.{self.personal_last_name.lower()}{self.personal_tax_number[:4]}",
+                "username": username_hint,
                 "tax_number": self.personal_tax_number,
                 "first_name": self.personal_first_name,
                 "last_name": self.personal_last_name,
@@ -80,17 +91,16 @@ class OnboardingState(rx.State):
             }
             response = await supabase_client.upsert_user(user_data)
             if response:
-                self.user_id = response[0]["id"]
+                self.user_id = response[0].get("id")
                 self.current_step = 2
                 self.is_loading = False
                 yield rx.redirect("/onboarding/step-2-business")
                 return
             raise ValueError("Nenhum dado retornado ao salvar o usuário.")
-        except Exception as e:
-            logging.exception(f"Error during personal data submission: {e}")
+        except Exception as exc:  # pragma: no cover - relies on external services
+            logging.exception("Error during personal data submission: %s", exc)
             self.is_loading = False
-            yield rx.toast.error(f"Erro ao salvar dados: {e}")
-            return
+            yield rx.toast.error(f"Erro ao salvar dados: {exc}")
 
     def _validate_business_data(self) -> bool:
         return all(
@@ -106,6 +116,18 @@ class OnboardingState(rx.State):
 
     @rx.event
     async def handle_business_submit(self, form_data: dict):
+        """Validate business data and move to the plan selection step."""
+
+        self.business_public_name = form_data.get("business_public_name", self.business_public_name).strip()
+        self.business_username = form_data.get("business_username", self.business_username).strip()
+        self.business_tax_number = form_data.get("business_tax_number", self.business_tax_number).strip()
+        self.business_service_category = form_data.get(
+            "business_service_category", self.business_service_category
+        ).strip()
+        self.business_country = form_data.get("business_country", self.business_country).strip() or "Brasil"
+        self.business_postal_code = form_data.get("business_postal_code", self.business_postal_code).strip()
+        self.business_vibe_tags = form_data.get("business_vibe_tags", self.business_vibe_tags).strip()
+
         if not self._validate_business_data():
             yield rx.toast.error("Por favor, preencha todos os campos.")
             return
@@ -120,11 +142,14 @@ class OnboardingState(rx.State):
         if not validate_postal_code(self.business_postal_code):
             yield rx.toast.error("CEP do estabelecimento inválido.")
             return
+
         self.current_step = 3
         yield rx.redirect("/onboarding/step-3-plan")
 
     @rx.event
     def handle_plan_submit(self):
+        """Confirm the selected plan before payment."""
+
         if not self.selected_plan:
             return rx.toast.error("Por favor, selecione um plano.")
         self.current_step = 4
@@ -132,13 +157,15 @@ class OnboardingState(rx.State):
 
     @rx.event
     async def handle_payment_submit(self, form_data: dict):
+        """Finalize onboarding, provision tenant schema, and redirect to success."""
+
         if not self.user_id:
-            yield rx.toast.error(
-                "ID do usuário não encontrado. Por favor, volte ao passo 1."
-            )
+            yield rx.toast.error("ID do usuário não encontrado. Por favor, volte ao passo 1.")
             return
+
         self.is_loading = True
         yield
+
         created_boteco_id = None
         try:
             boteco_data = {
@@ -146,9 +173,7 @@ class OnboardingState(rx.State):
                 "username": self.business_username,
                 "service_category": self.business_service_category,
                 "vibe_tags": [
-                    tag.strip()
-                    for tag in self.business_vibe_tags.split(",")
-                    if tag.strip()
+                    tag.strip() for tag in self.business_vibe_tags.split(",") if tag.strip()
                 ],
                 "establishment_tax_number": self.business_tax_number,
                 "country": self.business_country,
@@ -167,25 +192,23 @@ class OnboardingState(rx.State):
             )
             if boteco_res.data and len(boteco_res.data) > 0:
                 created_boteco_id = boteco_res.data[0]["id"]
+
             try:
                 await supabase_client.provision_schema(self.business_username)
-                logging.info(
-                    f"Schema provisioning triggered for: {self.business_username}"
-                )
+                logging.info("Schema provisioning triggered for: %s", self.business_username)
             except Exception as provision_error:
                 logging.exception(
-                    f"Provisioning failed, rolling back DB records: {provision_error}"
+                    "Provisioning failed, rolling back DB records: %s", provision_error
                 )
                 if created_boteco_id:
                     await supabase_client.delete_boteco(created_boteco_id)
                 raise provision_error
+
             self.is_loading = False
             self.current_step = 1
             self.selected_plan = ""
             yield rx.redirect("/onboarding/success")
-            return
-        except Exception as e:
-            logging.exception(f"Error during payment/provisioning: {e}")
+        except Exception as exc:  # pragma: no cover - depends on external services
+            logging.exception("Error during payment/provisioning: %s", exc)
             self.is_loading = False
-            yield rx.toast.error(f"Erro na finalização: {str(e)}. Tente novamente.")
-            return
+            yield rx.toast.error(f"Erro na finalização: {exc}. Tente novamente.")

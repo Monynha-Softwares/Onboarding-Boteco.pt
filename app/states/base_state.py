@@ -8,5 +8,5 @@ class BaseState(rx.State):
 
     @rx.event
     def toggle_mobile_menu(self):
-        """Toggles the visibility of the mobile menu."""
+        """Toggle the visibility of the mobile menu."""
         self.show_mobile_menu = not self.show_mobile_menu
