@@ -1,5 +1,4 @@
 import reflex as rx
-import reflex as rx
 
 from app.states.auth_state import AuthState
 from app.states.onboarding_state import OnboardingState
@@ -13,7 +12,9 @@ def form_field(
     on_change: rx.event.EventHandler,
     name: str,
     field_type: str = "text",
-    ) -> rx.Component:
+) -> rx.Component:
+    """Reusable input field for the signup form."""
+
     return rx.el.div(
         rx.el.label(label, class_name="block text-sm font-medium text-[#8C1D2C]"),
         rx.el.input(
@@ -29,6 +30,8 @@ def form_field(
 
 
 def signup_page() -> rx.Component:
+    """Custom sign-up page that seeds the onboarding flow."""
+
     return rx.el.main(
         rx.el.div(
             rx.el.div(
@@ -39,8 +42,6 @@ def signup_page() -> rx.Component:
                 ),
                 class_name="py-8 px-4 sm:px-6 lg:px-8 bg-[#FFF7E8] border-b border-gray-200",
             ),
-            # Use the global onboarding state so the stepper renders correctly
-            # (rx.var(0) caused a runtime compile error in the Reflex compiler).
             onboarding_stepper(OnboardingState.current_step),
             rx.el.div(
                 rx.el.h2("Criar Conta", class_name="text-2xl font-bold text-[#8C1D2C]"),

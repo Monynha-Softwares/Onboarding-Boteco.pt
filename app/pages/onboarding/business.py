@@ -1,5 +1,4 @@
 import reflex as rx
-import reflex as rx
 
 from app.states.onboarding_state import OnboardingState
 from app.components.onboarding_stepper import onboarding_stepper
@@ -11,13 +10,17 @@ def form_field(
     value: rx.Var,
     on_change: rx.event.EventHandler,
     field_type: str = "text",
+    name: str | None = None,
 ) -> rx.Component:
+    """Reusable input field for the business step."""
+
     return rx.el.div(
         rx.el.label(label, class_name="block text-sm font-medium text-[#8C1D2C]"),
         rx.el.input(
             placeholder=placeholder,
             on_change=on_change,
             type=field_type,
+            name=name,
             class_name="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#AA3140] focus:border-[#AA3140] sm:text-sm",
             default_value=value,
         ),
@@ -26,6 +29,8 @@ def form_field(
 
 
 def business_step() -> rx.Component:
+    """Step 2: capture business details before plan selection."""
+
     return rx.el.main(
         rx.el.div(
             rx.el.div(
@@ -53,36 +58,42 @@ def business_step() -> rx.Component:
                             "Ex: Bar do Jonas",
                             OnboardingState.business_public_name,
                             OnboardingState.set_business_public_name,
+                            name="business_public_name",
                         ),
                         form_field(
                             "Username (@)",
                             "Ex: bardojonas",
                             OnboardingState.business_username,
                             OnboardingState.set_business_username,
+                            name="business_username",
                         ),
                         form_field(
                             "CNPJ do Estabelecimento",
                             "XX.XXX.XXX/XXXX-XX",
                             OnboardingState.business_tax_number,
                             OnboardingState.set_business_tax_number,
+                            name="business_tax_number",
                         ),
                         form_field(
                             "Categoria de Serviço",
                             "Ex: Bar, Restaurante",
                             OnboardingState.business_service_category,
                             OnboardingState.set_business_service_category,
+                            name="business_service_category",
                         ),
                         form_field(
                             "País",
                             "Brasil",
                             OnboardingState.business_country,
                             OnboardingState.set_business_country,
+                            name="business_country",
                         ),
                         form_field(
                             "CEP",
                             "XXXXX-XXX",
                             OnboardingState.business_postal_code,
                             OnboardingState.set_business_postal_code,
+                            name="business_postal_code",
                         ),
                         rx.el.div(
                             rx.el.label(
@@ -92,6 +103,7 @@ def business_step() -> rx.Component:
                             rx.el.input(
                                 placeholder="Ex: descontraído, música ao vivo, cerveja artesanal",
                                 name="business_vibe_tags",
+                                on_change=OnboardingState.set_business_vibe_tags,
                                 class_name="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#AA3140] focus:border-[#AA3140] sm:text-sm",
                                 default_value=OnboardingState.business_vibe_tags,
                             ),
