@@ -63,7 +63,3 @@ pytest -q
 - `app/components/`: cabeçalho, rodapé e stepper reutilizáveis.
 - `assets/`: ícones e imagens estáticas.
 - `tests/`: suíte Pytest cobrindo fluxo de autenticação e branding.
-
-## Observações
-- O app não exibe nenhum badge "Built with Reflex" ou elementos de branding da template padrão.
-- As páginas e eventos foram validados para evitar handlers incompletos ou imports ausentes.
