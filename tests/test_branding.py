@@ -4,7 +4,7 @@ from pathlib import Path
 
 def test_branding_name_updated():
     app_dir = Path("app")
-    banned_term = "Barnostri"
+    banned_term = "Boteco PRO"
     files_with_term: list[Path] = []
     for file_path in app_dir.rglob("*.py"):
         if banned_term in file_path.read_text(encoding="utf-8"):
