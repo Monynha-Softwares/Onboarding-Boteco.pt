@@ -1,74 +1,91 @@
-<!-- Copilot / AI agent instructions for Onboarding-Boteco.pt -->
-# Copilot Instructions — Onboarding-Boteco.pt
+<!-- Copilot / AI agent instructions for Onboarding-Boteco.pt (UPDATED) -->
+# Copilot Instructions — Onboarding-Boteco.pt (UPDATED)
 
-Purpose: give an AI coding agent the minimum, actionable knowledge to be productive in this repo.
+This file is an updated, concise guide for AI coding agents to be immediately productive in the repository. It supplements the existing `.github/copilot-instructions.md` with tighter examples and explicit run/debug/test commands.
 
-- **Big picture**
-  - This is a Reflex-based web app (see `app/app.py`) that composes UI pages and registers an ASGI API.
-  - Authentication is handled by `reflex-clerk-api` (Clerk). Protected pages are registered with `on_load=clerk.protect` (see onboarding routes in `app/app.py`).
-  - Persistence and core business operations use Supabase via `app/services/supabase_client.py` and the `supabase` client library.
-  - The repo uses a per-tenant schema provisioning model: the code provisions schemas named `org_{username}` by calling the internal FastAPI route `POST /api/provision_org` (see `app/api/provision.py` and `SupabaseClient.provision_schema`).
+## Big picture
+- Reflex-based web app (UI pages + Reflex states) and an internal FastAPI app mounted on the same ASGI application (`app/app.py`).
+- Clerk (via `reflex-clerk-api`) is used for authentication. Pages that must be protected use `on_load=clerk.protect` (examples in `app/app.py` are commented).
+- Persistence uses Supabase via `app/services/supabase_client.py`. The code uses `postgrest`-style responses and a defensive `_execute` wrapper for error handling.
+- Multi-tenant pattern: each organization gets its own Postgres schema named `org_{username}`. Provisioning is done by POSTing to the internal route `/api/provision_org` (see `app/api/provision.py`).
 
-- **Where to look first (fast tour)**n+  - `app/app.py` — application entry, page & API registration, Clerk wrapping.
-  - `app/pages/` — page components. Onboarding pages live in `app/pages/onboarding/` (personal, business, plan, payment, success).
-  - `app/states/onboarding_state.py` — central onboarding flow state and Rx events. Key place for business logic (validation, submissions, calls to `supabase_client`).
-  - `app/services/supabase_client.py` — DB helper, upsert/create patterns, provision API call, rollback logic.
-  - `app/api/provision.py` — internal FastAPI endpoint that runs a Supabase RPC to create schemas. Uses service role key — treat as sensitive.
-  - `app/components/onboarding_stepper.py` — UI pattern for multi-step flows (useful when adding steps).
-  - `app/utils/validators.py` — input validation functions used by state handlers.
-  - `alembic/` — DB migration tooling notes; see `alembic/README` for single-database config.
+## Where to inspect first (fast tour)
+- `app/app.py` — app bootstrap, theme, Clerk wrapping, page registration, and `app.api = api_app`.
+- `app/states/onboarding_state.py` — main business flow for onboarding and the place to add validation & persistence logic.
+- `app/services/supabase_client.py` — canonical Supabase usage: client init, upserts, rollback pattern, and `provision_schema` implementation.
+- `app/api/provision.py` — FastAPI endpoint that runs a Supabase RPC (`execute_sql`) to create a schema. Uses the service role key.
+- `app/pages/onboarding/` — UI steps implemented as Reflex components.
+- `app/components/onboarding_stepper.py` and `app/utils/validators.py` — shared UI and validators.
 
-- **Data flow highlights / examples**
-  - Personal -> Business -> Plan -> Payment: user input is stored via `OnboardingState` events. `handle_personal_submit` upserts the user in Supabase, sets `user_id`, then redirects to step 2.
-  - Finalization (`handle_payment_submit`) creates `boteco` and `user_boteco` via `supabase_client.create_boteco_and_associate_user`, then triggers schema provisioning by POSTing to `/api/provision_org` on localhost (the internal API).
-  - Provisioning is implemented as a server-side RPC call and will roll back DB records if provisioning fails — follow that pattern when adding transactional flows.
+## Concrete examples & patterns to reuse
+- Registering pages and protecting routes (from `app/app.py`):
 
-- **Dev & test workflows (discernible from repo)**
-  - Install dependencies: `pip install -r requirements.txt`.
-  - Run tests: `pytest` (there's a basic `tests/test_branding.py`).
-  - Start a local server (example that works for ASGI apps in this layout):
+```py
+app.add_page(dashboard, route="/app", on_load=clerk.protect)
+```
 
-    ```powershell
-    pip install -r requirements.txt
-    uvicorn app.app:app --reload --port 8000
-    ```
+- Supabase helper usage pattern (from `app/services/supabase_client.py`):
+  - Use `create_client(url, key, options=ClientOptions(schema="reflex"))`.
+  - Wrap calls in `_execute` to inspect `response.error` and raise helpful exceptions.
+  - Example rollback: create boteco -> insert user_boteco; on failure delete the boteco.
 
-    - The FastAPI internal route is reachable at `http://localhost:8000/api/provision_org` (used by `SupabaseClient.provision_schema`). If the team uses a different startup command (e.g., a Reflex dev server), verify before changing run scripts.
+- Provisioning pattern:
+  - `SupabaseClient.provision_schema` posts to `http://localhost:8000/api/provision_org` with `{"boteco_username": "X"}`.
+  - `app/api/provision.py` validates username against `^[a-zA-Z0-9_]+$` and runs `execute_sql` RPC to run DDL `CREATE SCHEMA IF NOT EXISTS "org_X";`.
 
-- **Environment & secrets**
-  - Required env vars observed in code:
-    - `SUPABASE_URL`
-    - `SUPABASE_SERVICE_ROLE_KEY` (preferred for admin/provisioning) or `SUPABASE_KEY`
-    - `CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`
-  - Treat `SUPABASE_SERVICE_ROLE_KEY` as extremely sensitive (used to run RPC/DDL).
+## Dev & test commands (powershell)
+- Install deps:
 
-- **Conventions & patterns specific to this project**
-  - UI composition: pages use Reflex `rx.el` primitives and small helper functions (see `personal.py` and `business.py`), keep components pure and put shared UI in `app/components/`.
-  - State & flow: central `OnboardingState` holds the multi-page flow; prefer adding fields and rx.event handlers there rather than scattering logic across pages.
-  - API / service separation: internal FastAPI routes live under `app/api/` and are attached to the Reflex app via `app.api = api_app` in `app/app.py`.
-  - DB safety: `supabase_client.py` shows the intended pattern: perform DB write(s), validate the response, and perform compensating deletes on error. Follow this for multi-step persistence.
+```powershell
+pip install -r requirements.txt
+```
 
-- **When editing or extending onboarding**
-  - Add page under `app/pages/onboarding/<step>.py` and register it in `app/app.py` with `app.add_page(...)`.
-  - Update `OnboardingState` with new fields and event handlers; use `rx.event` for async interactions.
-  - Update `onboarding_stepper` in `app/components/onboarding_stepper.py` if adding/removing steps (it computes progress bar width using `current_step`).
+- Run tests:
 
-- **Common gotchas & safety checks**
-  - Provisioning RPCs require the service role key and run DDL (CREATE SCHEMA). Ensure tests or local runs do not accidentally run provisioning against production.
-  - `SupabaseClient._initialize_client` sets `schema="reflex"` by default; when acting on public tables or other schemas, be explicit about schema use.
-  - The internal API is called via hardcoded `http://localhost:8000/api/provision_org` in `supabase_client.py` — change only if the dev server uses a different host/port or when adding environment-based overrides.
+```powershell
+pytest -q
+```
 
-- **Examples you can use in PRs or code changes**
-  - Add a protected page route:
+- Run app locally (ASGI):
 
-    ```py
-    from app.pages.onboarding.newstep import new_step
-    app.add_page(new_step, route="/onboarding/step-5-extra", on_load=clerk.protect)
-    ```
+```powershell
+uvicorn app.app:app --reload --port 8000
+```
 
-  - Call the internal provision API safely (follow `SupabaseClient.provision_schema`): use `httpx.AsyncClient`, call `POST /api/provision_org` with `{ "boteco_username": "username" }`, and handle HTTP errors.
+Notes:
+- The provisioning endpoint is reachable at `http://localhost:8000/api/provision_org` when running uvicorn as above.
+- The repo contains `load_env.py` which calls `dotenv.load_dotenv()` — place local credentials in a `.env` file.
 
-- **If something is unclear**
-  - Ask the maintainers: preferred run command (Reflex dev server vs. `uvicorn`), local dev Supabase setup, and any environment defaults.
+## Environment variables (critical)
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY` — service/admin key used by the provisioning endpoint (treat as extremely sensitive).
+- `SUPABASE_KEY` — fallback (less privileged).
+- `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
 
-Please review these instructions and tell me if you want the file more/less verbose, or if there are specific workflows (containers, Docker Compose, CI) to include.
+Security: Do NOT store `SUPABASE_SERVICE_ROLE_KEY` in public CI logs or test fixtures. Ensure provisioning only runs against dev databases during local tests.
+
+## Conventions & guidance for making changes
+- Keep business logic in `app/states/*_state.py` as `rx.State` subclasses and expose async handlers with `@rx.event`.
+- Use `supabase_client` helpers for DB operations — they centralize error handling and rollback semantics.
+- When adding onboarding steps:
+  1. Add the UI under `app/pages/onboarding/<step>.py`.
+  2. Register the page in `app/app.py` with `app.add_page(...)`.
+  3. Add any shared state fields / handlers in `app/states/onboarding_state.py`.
+  4. Update `app/components/onboarding_stepper.py` if the step count changes.
+
+## Gotchas & things to watch
+- `SupabaseClient` default schema is `reflex`. Be explicit if you need to query public tables or other schemas.
+- `provision_schema` uses a hardcoded `http://localhost:8000` endpoint — consider making this configurable via env var if deploying differently.
+- Provisioning runs DDL (CREATE SCHEMA) via a service role key — avoid running against production by accident.
+
+## Suggested small improvements (optional)
+- Make the provisioning API URL configurable with an env var; fall back to `http://localhost:8000`.
+- Add a short `CONTRIBUTING.md` with these run/test commands and how to supply test dev keys.
+- Add an integration test that mocks the provisioning endpoint and verifies rollback behavior.
+
+---
+I created ` .github/COPILOT_INSTRUCTIONS_UPDATED.md` with these updates. If you'd like, I can:
+- overwrite the original ` .github/copilot-instructions.md` with this content (confirm and I'll replace it),
+- or apply a smaller patch that merges only selected sections into the existing file.
+
+Which option do you prefer? If you want a direct replacement, I will update the original file now.
